@@ -74,7 +74,9 @@
               <h4 class="fst-italic">Nuestras redes</h4>
               <ol class="list-unstyled">
                 {% for red in redes %}
-                  <li><a class=text-decoration-none href={{ red.url }} target="_blank"><i class="{{red.icono}}"></i>  {{red}}</a></li>
+                 {% if red.url %}
+                    <li><a class=text-decoration-none href={{ red.url }} target="_blank"><i class="{{red.icono}}"></i>  {{red}}</a></li>
+                  {% endif %}
                 {% endfor %}
               </ol>
             </article>
