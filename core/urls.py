@@ -21,7 +21,7 @@ from django.conf.urls import handler404
 from apps.blog.views import NotFoundView
 
 
-#handler404 = NotFoundView.as_view()
+handler404 = NotFoundView.as_view()
 
 
 urlpatterns = [
