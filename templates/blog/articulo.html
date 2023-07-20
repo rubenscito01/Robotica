@@ -29,10 +29,10 @@
     <a class="btn btn-dark rounded-pill" href={% url 'inicio' %}>Volver al Inicio</a>
     {% if request.user == articulo.autor %}
       <section class='float-end'>
-        <a class="btn btn-dark rounded-pill" href={% url 'inicio' %}>Editar</a>
-        <a class="btn btn-dark rounded-pill" href={% url 'inicio' %}>Eliminar</a>
+        <a class="btn btn-dark rounded-pill" href={% url 'actualizar_articulo' articulo_slug=articulo.slug %}>Editar</a>
+        <a class="btn btn-dark rounded-pill" href={% url 'eliminar_articulo' articulo_slug=articulo.slug %}>Eliminar</a>
     </section>
-    {% endif %}
+    {% endif %} 
   </section>
 
   <!-- Comentarios -->
