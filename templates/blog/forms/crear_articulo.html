@@ -1,0 +1,21 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+
+{% block contenido %}
+
+    <section class='mb-5'>
+        <form action='' method='post' enctype='multipart/form-data'>
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <section class='my-3 mt-5 mb-5'>
+                <input class='btn btn-dark rounded-pill' type='submit' value='Crear Articulo'>
+            </section>
+
+        </form>
+    </section>
+
+
+{% endblock contenido %}

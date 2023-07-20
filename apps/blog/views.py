@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404
-from django.views.generic import TemplateView, ListView, DetailView
-from django.views.generic.dates import YearArchiveView
+from django.urls import reverse_lazy
+from django.views.generic import TemplateView, ListView, DetailView, YearArchiveView, CreateView
 from django.contrib.auth.models import User
-from . import models
+from . import models, forms
 
 
 class NotFoundView(TemplateView):
@@ -78,3 +78,15 @@ class ArticulosByArchivoViews(YearArchiveView):
             return models.Articulo.objects.filter(creacion__year=year, creacion__month=month, publicado=True)
         else:
             return super().get_queryset()
+
+
+class ArticuloCreateView(CreateView):
+    model = models.Articulo
+    template_name = 'blog/forms/crear_articulo.html'
+    form_class = forms.ArticuloForm
+
+    def form_valid(self, form):
+        form.instance.autor = self.request.user
+        return super().form_valid(form)
+
+    success_url = reverse_lazy('inicio')

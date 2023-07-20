@@ -16,5 +16,5 @@ urlpatterns = [
     path('archivo/<int:year>/<int:month>',
          views.ArticulosByArchivoViews.as_view(), name='archivo'),
 
-    # path('404/', views.NotFoundView.as_view(), name='custom_404'),
+    path('crear_articulo/', views.ArticuloCreateView.as_view(), name='crear_articulo')
 ]
