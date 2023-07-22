@@ -61,7 +61,7 @@ class ArticulosByAutorView(ListView):
         return context
 
 
-class ArticulosByArchivoViews(YearArchiveView):
+class ArticulosByArchivoView(YearArchiveView):
     model = models.Articulo
     template_name = 'blog/archivo.html'
     make_object_list = True
@@ -75,9 +75,20 @@ class ArticulosByArchivoViews(YearArchiveView):
         month = self.kwargs['month']
 
         if year and month:
-            return models.Articulo.objects.filter(creacion__year=year, creacion__month=month, publicado=True)
+            context = models.Articulo.objects.filter(creacion__year=year, creacion__month=month, publicado=True)
         else:
-            return super().get_queryset()
+            context = super().get_queryset()
+        return context
+    
+    def get_context_data(self, **kwargs):
+        context = super(ArticulosByArchivoView, self).get_context_data(**kwargs)
+        year = self.kwargs['year']
+        month = self.kwargs['month']
+
+        if year and month:
+            context['articulo_fecha'] = models.Articulo.objects.filter(creacion__year=year, creacion__month=month, publicado=True).first()
+        
+        return context
 
 
 class ArticuloCreateView(CreateView):
