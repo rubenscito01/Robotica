@@ -11,7 +11,7 @@
 
     <strong class="d-inline-block mb-2 mt-3 text-primary"><a href= {% url 'categoria' categoria_slug=articulo.categoria.slug %} >{{ articulo.categoria }}</a></strong>
     <h2 class="blog-post-title mb-1">{{ articulo.titulo }}</h2>
-    <p class="blog-post-meta">{{ articulo.creacion|date:'d M Y' }} por <a href= {% url 'autor' autor=articulo.autor%} >{{ articulo.autor }}</a></p>
+    <p class="blog-post-meta">{{ articulo.creacion|date:'d F Y'|capfirst }} por <a href= {% url 'autor' autor=articulo.autor%} >{{ articulo.autor }}</a></p>
 
     <p class="lead my-3">{{ articulo.bajada }}</p>
     <hr>
@@ -78,5 +78,3 @@
 
 
 {% endblock contenido %}
-
-
