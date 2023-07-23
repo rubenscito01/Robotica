@@ -1,14 +1,7 @@
-{% extends 'blog/base.html' %}
+    Bienvenido {{ user.username }}
+    Para confirmar tu registro en nuestro sitio, haz clic en el siguiente enlace:
+    {{ confirmation_link }} Confirmar registro
 
-{% block contenido %}
+    Gracias por unirte a nuestro sitio. ¡Esperamos verte pronto!
 
-    <h3>Bienvenido {{ user.username }} </h3>
-    <p>Para confirmar tu registro en nuestro sitio, haz clic en el siguiente enlace:</p>
-    <a href="{{ confirmation_link }}">Confirmar registro</a>
-    <br>
-    <p><b>Gracias por unirte a nuestro sitio. ¡Esperamos verte pronto!</b></p>
-    <br>
-    <small>Este es un mensaje enviado automáticamente. Por favor, no respondas a esta dirección de correo.</small>
-
-
-{% endblock contenido %}
+    Este es un mensaje enviado automáticamente. Por favor, no respondas a esta dirección de correo.

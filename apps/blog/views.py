@@ -1,14 +1,15 @@
-from pyexpat.errors import messages
+from django.contrib import messages
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy, reverse
 from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView
@@ -190,28 +191,28 @@ class SignUpView(CreateView):
             'user': self.object,
             'confirmation_link': confirmation_link,
         })
-        send_mail(subject, message, 'miguelpuente@miguelpuente.com.ar', [self.object.email], fail_silently=False, secure=True)
+        send_mail(subject, message, settings.EMAIL_HOST_USER, [self.object.email])
 
         return response
 
 
 class ConfirmationView(View):
     def get(self, request, code, user):
-        user = get_object_or_404(User, username=user)
+        try:
+            uid = urlsafe_base64_decode(user).decode('utf-8')
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            # Manejar enlace inválido o usuario no encontrado
+            messages.error(request, "El enlace de confirmación es inválido.")
+            return redirect('login')  # Redirigir a la página de inicio de sesión o donde desees
 
-        # Verificar el código de confirmación recibido en el enlace
-        if user.profile.activation_code == code:
-            # Activar la cuenta del usuario
+        if default_token_generator.check_token(user, code):
+            # Si el token es válido, confirmar al usuario y activar su cuenta
             user.is_active = True
-            user.profile.email_confirmed = True
             user.save()
-
-            # Redirigir al inicio de sesión con un mensaje de confirmación
-            messages.success(request, '¡Su cuenta ha sido confirmada! Puede iniciar sesión ahora.')
-            return redirect('login')  # Reemplaza 'login' por el nombre de la vista de inicio de sesión
+            messages.success(request, "¡Tu cuenta ha sido activada! Ahora puedes iniciar sesión.")
         else:
-            # Mostrar un mensaje de error si el código de confirmación es incorrecto
-            messages.error(request, 'El código de confirmación es incorrecto. Por favor, verifique su enlace.')
+            # Manejar token inválido
+            messages.error(request, "El enlace de confirmación es inválido.")
 
-            # Redirigir a una página de error o donde consideres apropiado
-            return redirect('error')  # Reemplaza 'error' por el nombre de la vista de página de error
+        return redirect('login')  # Redirigir a la página de inicio de sesión o donde desees
