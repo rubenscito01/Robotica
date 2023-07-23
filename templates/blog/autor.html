@@ -16,9 +16,6 @@
   {% endif %}
 
 {% for articulo in articulos %}
-  {% if forloop.first and page_obj.number == 1 %}
-    
-  {% endif %}
   {% if forloop.counter|divisibleby:2 %}
     <!-- Artículo 1 -->
     <article class="card mb-3">

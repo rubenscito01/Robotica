@@ -23,29 +23,41 @@
 
     <header class="d-flex flex-wrap justify-content-between py-3 mb-4 border-bottom">
       
-        <section class="dropdown">
-          <a href= {% url 'inicio' %} class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-            <img class="bi me-2" width="40" height="32" src= {% static 'blog/img/logo-tecno.png' %}>
-            <span class="fs-4">Blog Tecno</span>
-          </a>
-        </section>
+      <section class="dropdown">
+        <a href= {% url 'inicio' %} class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+          <img class="bi me-2" width="40" height="32" src= {% static 'blog/img/logo-tecno.png' %}>
+          <span class="fs-4">Blog Tecno</span>
+        </a>
+      </section>
+
+      {%if request.user.is_authenticated %}
 
         <section class="flex-shrink-0 dropdown">
           <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown"
             aria-expanded="false">
-            <img src= {% static 'blog/img/user.jpg' %} alt="mdo" width="32" height="32" class="rounded-circle">
+          <span>Hola @{{ request.user.username | title }}</span>
           </a>
           <ul class="dropdown-menu text-small shadow">
-
             {% if request.user.is_staff %}
               <li><a class="dropdown-item" href={% url 'crear_articulo' %}>Crear Artículo</a></li>
             {% endif %}
-
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Salir</a></li>
-
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Salir</a></li>
           </ul>
         </section>
+      {% else %}
+        <section class="flex-shrink-0 dropdown">
+          <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown"
+            aria-expanded="false">
+            <span>MENU</span>
+          </a>
+          <ul class="dropdown-menu text-small shadow">
+              <li><a class="dropdown-item" href={% url 'login' %}>Login</a></li>
+              <li><a class="dropdown-item" href={% url 'signup' %}>Registrarse</a></li>
+          </ul>
+        </section>
+
+      {% endif %}
     </header>
 
     <main class="mt-2">
@@ -84,7 +96,7 @@
               <h4 class="fst-italic">Archivos</h4>
               <ol class="list-unstyled mb-0">
                 {% for archivo in archivos %}
-                  <li><a class=text-decoration-none href= {% url 'archivo' year=archivo.fecha.year month=archivo.fecha.month %} >{{archivo.fecha|date:'F Y'|capfirst }}</a></li>
+                  <li><a class=text-decoration-none href= {% url 'archivo' year=archivo.fecha.year month=archivo.fecha.month %} >{{ archivo.fecha|date:'F Y'|capfirst }}</a></li>
                 {% endfor %}
               </ol>
             </article>
@@ -94,7 +106,7 @@
               <ol class="list-unstyled">
                 {% for red in redes %}
                  {% if red.url %}
-                    <li><a class=text-decoration-none href={{ red.url }} target="_blank"><i class="{{red.icono}}"></i>  {{red}}</a></li>
+                    <li><a class='text-decoration-none' href={{ red.url }} target="_blank"><i class="{{red.icono}}"></i>  {{red}}</a></li>
                   {% endif %}
                 {% endfor %}
               </ol>
