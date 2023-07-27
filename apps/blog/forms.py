@@ -24,7 +24,7 @@ class ArticuloForm(forms.ModelForm):
 class RegisterUserForm(UserCreationForm):
     class Meta:
         model = User
-        fields =  ['username', 'email', 'password1', 'password2']
+        fields = ['username', 'email', 'password1', 'password2']
 
     username = forms.CharField(widget=forms.TextInput(attrs={
         'class': 'form-control',
@@ -34,7 +34,7 @@ class RegisterUserForm(UserCreationForm):
         'class': 'form-control',
         'placeholder': 'Email',
     }))
-    password1= forms.CharField(widget=forms.PasswordInput(attrs={
+    password1 = forms.CharField(widget=forms.PasswordInput(attrs={
         'class': 'form-control',
         'placeholder': 'Contraseña',
     }))
@@ -48,11 +48,12 @@ class RegisterUserForm(UserCreationForm):
     # El correo electrónico existe y la cuenta no está activa -> eliminar la cuenta anterior y registrar una nueva
     def clean_email(self):
         email_recibido = self.cleaned_data.get("email")
-        correo_ya_registrado = User.objects.filter(email = email_recibido).exists()
-        user_es_activo = User.objects.filter(email = email_recibido, is_active = 1)
+        correo_ya_registrado = User.objects.filter(
+            email=email_recibido).exists()
+        user_es_activo = User.objects.filter(email=email_recibido, is_active=1)
         if correo_ya_registrado and user_es_activo:
             raise forms.ValidationError("Correo electrónico ya registrado.")
         elif correo_ya_registrado:
-            User.objects.filter(email = email_recibido).delete()
+            User.objects.filter(email=email_recibido).delete()
 
         return email_recibido

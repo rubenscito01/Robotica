@@ -1,20 +1,19 @@
 from django.contrib import messages
-from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.dates import YearArchiveView
+from core import settings
 from . import models, forms
 
 
@@ -88,19 +87,22 @@ class ArticulosByArchivoView(YearArchiveView):
         month = self.kwargs['month']
 
         if year and month:
-            context = models.Articulo.objects.filter(creacion__year=year, creacion__month=month, publicado=True)
+            context = models.Articulo.objects.filter(
+                creacion__year=year, creacion__month=month, publicado=True)
         else:
             context = super().get_queryset()
         return context
-    
+
     def get_context_data(self, **kwargs):
-        context = super(ArticulosByArchivoView, self).get_context_data(**kwargs)
+        context = super(ArticulosByArchivoView,
+                        self).get_context_data(**kwargs)
         year = self.kwargs['year']
         month = self.kwargs['month']
 
         if year and month:
-            context['articulo_fecha'] = models.Articulo.objects.filter(creacion__year=year, creacion__month=month, publicado=True).first()
-        
+            context['articulo_fecha'] = models.Articulo.objects.filter(
+                creacion__year=year, creacion__month=month, publicado=True).first()
+
         return context
 
 
@@ -110,7 +112,7 @@ def usuario_es_colaborador(user):
     return user.groups.filter(name='colaborador').exists()
 
 
-@method_decorator(user_passes_test(usuario_es_colaborador, login_url='inicio'), name='dispatch')
+@method_decorator(user_passes_test(usuario_es_colaborador, login_url='login'), name='dispatch')
 class ArticuloCreateView(CreateView):
     model = models.Articulo
     template_name = 'blog/forms/crear_articulo.html'
@@ -159,20 +161,29 @@ class ArticuloDeleteView(DeleteView):
         if self.object.autor == request.user or request.user.is_superuser:
             return super().dispatch(request, *args, **kwargs)
         else:
-            # Si el usuario no es el autor, redirigir a la página de inicio
+            # Si el usuario no es el autor, redirigir a la página de login
             return redirect('login')
 
 
 class SignUpView(CreateView):
     template_name = 'registration/register.html'
     form_class = forms.RegisterUserForm
-    success_url = reverse_lazy('login')  # Cambiar 'login' por el nombre de la vista de inicio de sesión
+    # Cambiar 'login' por el nombre de la vista de inicio de sesión
+    success_url = reverse_lazy('login')
 
     def form_valid(self, form):
         # Guardar el usuario y configurar un mensaje de éxito
         response = super().form_valid(form)
-        self.object.set_password(form.cleaned_data['password1'])  # Configurar la contraseña correctamente
-        self.object.is_active = False  # Marcar el usuario como inactivo hasta que confirme su correo electrónico
+        # Configurar la contraseña correctamente
+        self.object.set_password(form.cleaned_data['password1'])
+        # Marcar el usuario como inactivo hasta que confirme su correo electrónico
+        self.object.is_active = False
+
+        if not Group.objects.filter(name='miembro').exists():
+            Group.objects.create(name='miembro')
+            Group.objects.create(name='colaborador')
+
+        self.object.groups.add(Group.objects.get(name='miembro'))
         self.object.save()
 
         # Generar el token de verificación
@@ -180,7 +191,6 @@ class SignUpView(CreateView):
         uid = urlsafe_base64_encode(force_bytes(self.object.pk))
 
         # Construir el enlace de confirmación
-        domain = get_current_site(self.request).domain
         confirmation_link = self.request.build_absolute_uri(
             reverse('confirmacion', kwargs={'code': token, 'user': uid})
         )
@@ -191,7 +201,8 @@ class SignUpView(CreateView):
             'user': self.object,
             'confirmation_link': confirmation_link,
         })
-        send_mail(subject, message, settings.EMAIL_HOST_USER, [self.object.email])
+        send_mail(subject, message, settings.EMAIL_HOST_USER,
+                  [self.object.email])
 
         return response
 
@@ -204,15 +215,21 @@ class ConfirmationView(View):
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             # Manejar enlace inválido o usuario no encontrado
             messages.error(request, "El enlace de confirmación es inválido.")
-            return redirect('login')  # Redirigir a la página de inicio de sesión o donde desees
+            # Redirigir a la página de inicio de sesión o donde desees
+            return redirect('login')
 
         if default_token_generator.check_token(user, code):
             # Si el token es válido, confirmar al usuario y activar su cuenta
             user.is_active = True
+            perfil = models.Perfil.objects.create(user=user)
+            perfil.save()
+
             user.save()
-            messages.success(request, "¡Tu cuenta ha sido activada! Ahora puedes iniciar sesión.")
+            messages.success(
+                request, "¡Tu cuenta ha sido activada! Ahora puedes iniciar sesión.")
         else:
             # Manejar token inválido
             messages.error(request, "El enlace de confirmación es inválido.")
 
-        return redirect('login')  # Redirigir a la página de inicio de sesión o donde desees
+        # Redirigir a la página de inicio de sesión o donde desees
+        return redirect('login')
