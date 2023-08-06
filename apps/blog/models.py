@@ -49,16 +49,14 @@ class Acerca(models.Model):
 ################################
 
 
+from django.db import models
+
 class Red(models.Model):
     nombre = models.CharField(max_length=150, verbose_name='Red Social')
-    url = models.URLField(max_length=300, null=True,
-                          blank=True, verbose_name='Enlace')
-    icono = models.CharField(max_length=150, null=True,
-                             blank=True, verbose_name='Icono')
-    creacion = models.DateTimeField(
-        auto_now_add=True, verbose_name='Fecha de creación')
-    actualizacion = models.DateTimeField(
-        auto_now=True, verbose_name='Fecha de actualización')
+    url = models.URLField(max_length=300, null=True, blank=True, verbose_name='Enlace')
+    icono = models.ImageField(upload_to='redes_sociales/', null=True, blank=True, verbose_name='Icono')
+    creacion = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
+    actualizacion = models.DateTimeField(auto_now=True, verbose_name='Fecha de actualización')
 
     class Meta:
         verbose_name = 'Red Social'
@@ -67,6 +65,7 @@ class Red(models.Model):
 
     def __str__(self):
         return self.nombre
+
 
 
 ###########################
@@ -130,7 +129,7 @@ class Articulo(models.Model):
     contenido = RichTextField(verbose_name='Contenido')
     imagen = models.ImageField(
         upload_to='blog/articulos/imagenes', null=True, blank=True, verbose_name='Imagen')
-    publicado = models.BooleanField(default=False, verbose_name='Publicado')
+    publicado = models.BooleanField(default=True, verbose_name='Publicado')
     categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL,
                                   related_name='get_articulos', null=True, blank=True, verbose_name='Categoría')
     autor = models.ForeignKey(User, on_delete=models.SET_NULL,
